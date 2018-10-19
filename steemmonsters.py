@@ -282,60 +282,54 @@ class MyPrompt(Cmd):
         match_cnt = 0
         open_match = []
         reveal_match = []
-        try:
-            while True:
-                match_cnt += 1
-                
-                response = self.api.get_from_block(block_num)
-                for r in response:
-                    block_num = r["block_num"]
-                    if r["type"] == "sm_find_match":
-                        player = r["player"]
-                        if player not in open_match:
-                            open_match.append(player)
-                            log("%s starts searching for a match (%d player searching)" % (player, len(open_match)), color="yellow")
-                    elif r["type"] == "sm_team_reveal":
-                        result = json.loads(r["result"])
-                        player = r["player"]
-                        if player in open_match:
-                            open_match.remove(player)
-                        if player not in reveal_match:
-                            if "status" in result and "Waiting for opponent reveal." in result["status"]:
-                                reveal_match.append(player)
-                                log("%s waits for opponent reveal (%d player waiting)" % (player, len(reveal_match)), color="white")
+        while True:
+            match_cnt += 1
+            
+            response = self.api.get_from_block(block_num)
+            for r in response:
+                block_num = r["block_num"]
+                if r["type"] == "sm_find_match":
+                    player = r["player"]
+                    if player not in open_match:
+                        open_match.append(player)
+                        log("%s starts searching for a match (%d player searching)" % (player, len(open_match)), color="yellow")
+                elif r["type"] == "sm_team_reveal":
+                    result = json.loads(r["result"])
+                    player = r["player"]
+                    if player in open_match:
+                        open_match.remove(player)
+                    if player not in reveal_match:
+                        if "status" in result and "Waiting for opponent reveal." in result["status"]:
+                            reveal_match.append(player)
+                            log("%s waits for opponent reveal (%d player waiting)" % (player, len(reveal_match)), color="white")
+                    else:
+                        if "Waiting for opponent reveal." not in json.loads(r["result"])["status"]:
+                            reveal_match.remove(player)
+                    
+                    if "battle" in result:
+                        team1 = [{"id": result["battle"]["details"]["team1"]["summoner"]["card_detail_id"], "level": result["battle"]["details"]["team1"]["summoner"]["level"]}]
+                        for m in result["battle"]["details"]["team1"]["monsters"]:
+                            team1.append({"id": m["card_detail_id"], "level": m["level"]})
+                        team1_player = result["battle"]["details"]["team1"]["player"]
+            
+                        team2 = [{"id": result["battle"]["details"]["team2"]["summoner"]["card_detail_id"], "level": result["battle"]["details"]["team2"]["summoner"]["level"]}]
+                        for m in result["battle"]["details"]["team2"]["monsters"]:
+                            team2.append({"id": m["card_detail_id"], "level": m["level"]})
+                        team2_player = result["battle"]["details"]["team2"]["player"]
+                        winner = result["battle"]["details"]["winner"]
+                        if team1_player == winner:
+                            print("match " + colored(team1_player, "green")+" - " + colored(team2_player, "red"))
                         else:
-                            if "Waiting for opponent reveal." not in json.loads(r["result"])["status"]:
-                                reveal_match.remove(player)
-                        
-                        if "battle" in result:
-                            team1 = [{"id": result["battle"]["details"]["team1"]["summoner"]["card_detail_id"], "level": result["battle"]["details"]["team1"]["summoner"]["level"]}]
-                            for m in result["battle"]["details"]["team1"]["monsters"]:
-                                team1.append({"id": m["card_detail_id"], "level": m["level"]})
-                            team1_player = result["battle"]["details"]["team1"]["player"]
-                
-                            team2 = [{"id": result["battle"]["details"]["team2"]["summoner"]["card_detail_id"], "level": result["battle"]["details"]["team2"]["summoner"]["level"]}]
-                            for m in result["battle"]["details"]["team2"]["monsters"]:
-                                team2.append({"id": m["card_detail_id"], "level": m["level"]})
-                            team2_player = result["battle"]["details"]["team2"]["player"]
-                            winner = result["battle"]["details"]["winner"]
-                            if team1_player == winner:
-                                print("match " + colored(team1_player, "green")+" - " + colored(team2_player, "red"))
-                            else:
-                                print("match " + colored(team2_player, "green")+" - " + colored(team1_player, "red"))
-                            if team2_player in open_match:
-                                open_match.remove(team2_player)
-                            if team1_player in open_match:
-                                open_match.remove(team1_player)
-                            if team2_player in reveal_match:
-                                reveal_match.remove(team2_player)
-                            if team1_player in reveal_match:
-                                reveal_match.remove(team1_player)                             
-                            
-                                # print("%s finished" % (player, len(reveal_match)))
-                #print("open %s" % str(open_match))
-                #print("Waiting %s" % str(reveal_match))
-        except KeyboardInterrupt:
-            print("exit..")
+                            print("match " + colored(team2_player, "green")+" - " + colored(team1_player, "red"))
+                        if team2_player in open_match:
+                            open_match.remove(team2_player)
+                        if team1_player in open_match:
+                            open_match.remove(team1_player)
+                        if team2_player in reveal_match:
+                            reveal_match.remove(team2_player)
+                        if team1_player in reveal_match:
+                            reveal_match.remove(team1_player)                             
+
  
     def help_add(self):
         print("Add a new entry to the system.")
