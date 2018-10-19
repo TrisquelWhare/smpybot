@@ -1,0 +1,19 @@
+{
+    "wallet_password": "123",
+    "account": "holger80",
+    "mana_cap": 23,
+    "decks": {
+                "death1": ["Zintar Mortalis", "Haunted Spirit", "Skeleton Assassin", "Twisted Jester", "Haunted Spider", "Screaming Banshee", "Undead Priest"],
+                "water1": ["Alric Stormbringer", "Naga Warrior", "Medusa", "Mischievous Mermaid", "Pirate Captain", "Crustacean King"],
+                "fire1": ["Malric Inferno", "Serpentine Soldier", "Elemental Phoenix", "Goblin Shaman", "Fire Demon"],
+                "dragon1": ["Selenia Sky", "Gold Dragon", "Magi of the Forest", "Swamp Thing", "Spirit of the Forest"],
+                "life1": ["Tyrus Paladium", "Silvershield Paladin", "Angel of Light", "Divine Healer", "Feral Spirit", "Peacebringer"],
+                "water2": ["Alric Stormbringer", "Naga Warrior", "Medusa", "Pirate Captain", "Crustacean King", "Mischievous Mermaid"],
+                "water3": ["Alric Stormbringer", "Spineback Turtle", "Sabre Shark", "Mischievous Mermaid", "Medusa", "Crustacean King"],
+                "earth1": ["Lyanna Natura", "Stone Golem", "Earth Elemental", "Swamp Thing", "Goblin Sorcerer", "Spirit of the Forest"],
+                "dragon2": ["Selenia Sky", "Stone Golem", "Earth Elemental", "Swamp Thing", "Goblin Sorcerer", "Spirit of the Forest"],
+                "death2": ["Zintar Mortalis", "Haunted Spirit", "Lord of Darkness", "Undead Priest", "Screaming Banshee", "Haunted Spider"],
+                "earth2": ["Lyanna Natura", "Rexxie", "Earth Elemental", "Swamp Thing", "Spirit of the Forest"]
+    },
+    "play_counter": 10
+}
