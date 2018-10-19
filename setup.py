@@ -76,10 +76,10 @@ if __name__ == '__main__':
             'Intended Audience :: Developers',
         ],
         install_requires=requires,
-        #entry_points={
-        #    'console_scripts': [
-        #        'steemmonsters=steemmonsters.cli:cli',
-        #    ],
-        #},
+        entry_points={
+            'console_scripts': [
+                'steemmonsters=steemmonsters.cli:cli',
+            ],
+        },
         include_package_data=True,
     )
