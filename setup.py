@@ -54,7 +54,7 @@ if __name__ == '__main__':
     setup(
         name='steemmonsters',
         version=VERSION,
-        description='auto voter for STEEM',
+        description='command line tool for STEEM monsters',
         long_description=get_long_description(),
         author='Holger Nahrstaedt',
         author_email='holgernahrstaedt@gmx.de',
@@ -68,7 +68,6 @@ if __name__ == '__main__':
             'License :: OSI Approved :: MIT License',
             'Operating System :: OS Independent',
             'Programming Language :: Python',
-            'Programming Language :: Python :: 2.7',
             'Programming Language :: Python :: 3',
             'Programming Language :: Python :: 3.4',
             'Programming Language :: Python :: 3.5',
@@ -77,10 +76,10 @@ if __name__ == '__main__':
             'Intended Audience :: Developers',
         ],
         install_requires=requires,
-        entry_points={
-            'console_scripts': [
-                'steemmonsters=steemmonsters.cli:cli',
-            ],
-        },
+        #entry_points={
+        #    'console_scripts': [
+        #        'steemmonsters=steemmonsters.cli:cli',
+        #    ],
+        #},
         include_package_data=True,
     )

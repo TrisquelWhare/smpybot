@@ -87,11 +87,15 @@ class MyPrompt(Cmd):
  
     def do_show_cards(self, inp):
         if inp == "":
-            cards = self.api.get_collection(self.account)
+            cards = self.api.get_collection(self.sm_config["account"])
         else:
             cards = self.api.get_collection(inp)
         tx = json.dumps(cards, indent=4)
         print(tx)
+ 
+    def do_show_deck(self, inp):
+        tx = json.dumps(self.sm_config["decks"][inp], indent=4)
+        print(tx) 
  
     def do_play(self, inp):
         if inp != "random" and inp not in self.sm_config["decks"]:
@@ -106,6 +110,9 @@ class MyPrompt(Cmd):
             cnt = 0
             self.stm.wallet.unlock(self.sm_config["wallet_password"])
             mana_cap = self.sm_config["mana_cap"]
+            ruleset = self.sm_config["ruleset"]
+            match_type = self.sm_config["match_type"]
+            
             acc = Account(self.sm_config["account"], steem_instance=self.stm)
             
             response = self.api.get_card_details()
@@ -152,7 +159,7 @@ class MyPrompt(Cmd):
                 deck = {"trx_id": "", "summoner": summoner, "monsters": monsters, "secret": secret}
                 
                 team_hash = generate_team_hash(deck["summoner"], deck["monsters"], deck["secret"])
-                json_data = {"match_type":"Ranked","mana_cap":mana_cap,"team_hash":team_hash,"summoner_level":summoner_level,"ruleset":"Standard"}
+                json_data = {"match_type":match_type, "mana_cap":mana_cap,"team_hash":team_hash,"summoner_level":summoner_level,"ruleset":ruleset}
                 trx = self.stm.custom_json('sm_find_match', json_data, required_posting_auths=[acc["name"]])
 
                 sleep(1)

@@ -2,6 +2,8 @@
     "wallet_password": "123",
     "account": "holger80",
     "mana_cap": 23,
+    "ruleset": "Standard",
+    "match_type": "Ranked",
     "decks": {
                 "death1": ["Zintar Mortalis", "Haunted Spirit", "Skeleton Assassin", "Twisted Jester", "Haunted Spider", "Screaming Banshee", "Undead Priest"],
                 "water1": ["Alric Stormbringer", "Naga Warrior", "Medusa", "Mischievous Mermaid", "Pirate Captain", "Crustacean King"],
@@ -15,5 +17,5 @@
                 "death2": ["Zintar Mortalis", "Haunted Spirit", "Lord of Darkness", "Undead Priest", "Screaming Banshee", "Haunted Spider"],
                 "earth2": ["Lyanna Natura", "Rexxie", "Earth Elemental", "Swamp Thing", "Spirit of the Forest"]
     },
-    "play_counter": 10
+    "play_counter": 1
 }
