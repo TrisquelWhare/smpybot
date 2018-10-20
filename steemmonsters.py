@@ -102,6 +102,11 @@ class SMPrompt(Cmd):
         tx = json.dumps(self.sm_config["decks"][inp], indent=4)
         print(tx)
 
+    def do_ranking(self, inp):
+        response = self.api.get_player_details(acc["name"])
+        tx = json.dumps(response, indent=4)
+        print(tx)
+
     def do_cancel(self, inp):
         self.stm.wallet.unlock(self.sm_config["wallet_password"])
         acc = Account(self.sm_config["account"], steem_instance=self.stm)
