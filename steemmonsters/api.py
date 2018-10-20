@@ -84,7 +84,7 @@ class Api(object):
         while str(response) != '<Response [200]>' and cnt2 < 10:
             response = requests.get(self.__url__ + "transactions/history?from_block=%d" % block_num)
             if str(response) != '<Response [200]>':
-                sleep(2)
+                time.sleep(2)
             cnt2 += 1
         return response.json()
 
@@ -94,7 +94,7 @@ class Api(object):
         while str(response) != '<Response [200]>' and cnt2 < 10:
             response = requests.get(self.__url__ + "transactions/lookup?trx_id=%s" % trx)
             if str(response) != '<Response [200]>':
-                sleep(2)
+                time.sleep(2)
             cnt2 += 1
         return response.json()
 
@@ -104,7 +104,7 @@ class Api(object):
         while str(response) != '<Response [200]>' and cnt2 < 10:
             response = requests.get(self.__url__ + "cards/stats")
             if str(response) != '<Response [200]>':
-                sleep(2)
+                time.sleep(2)
             cnt2 += 1
         return response.json()
 
@@ -114,7 +114,7 @@ class Api(object):
         while str(response) != '<Response [200]>' and cnt2 < 10:
             response = requests.get(self.__url__ + "market/status?id=%s" % market_id)
             if str(response) != '<Response [200]>':
-                sleep(2)
+                time.sleep(2)
             cnt2 += 1
         return response.json()
 
@@ -124,7 +124,7 @@ class Api(object):
         while str(response) != '<Response [200]>' and cnt2 < 20:
             response = requests.get(self.__url__ + "battle/result?id=%s" % ids)
             if str(response) != '<Response [200]>':
-                sleep(1)
+                time.sleep(1)
             cnt2 += 1
         return response.json()
 
@@ -134,6 +134,6 @@ class Api(object):
         while str(response) != '<Response [200]>' and cnt2 < 20:
             response = requests.get(self.__url__ + "battle/status?id=%s" % ids)
             if str(response) != '<Response [200]>':
-                sleep(1)
+                time.sleep(1)
             cnt2 += 1
         return response.json()
