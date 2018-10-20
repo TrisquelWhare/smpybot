@@ -145,9 +145,9 @@ class SMPrompt(Cmd):
             mycards = {}
             for r in response["cards"]:
                 if r["card_detail_id"] not in mycards:
-                    mycards[r["card_detail_id"]] = {"uid": r["uid"], "xp": r["xp"], "name": cards[r["card_detail_id"]]["name"], "edition": r["edition"], "id": r["card_detail_id"]}
+                    mycards[r["card_detail_id"]] = {"uid": r["uid"], "xp": r["xp"], "name": cards[r["card_detail_id"]]["name"], "edition": r["edition"], "id": r["card_detail_id"], "gold": r["gold"]}
                 elif r["xp"] > mycards[r["card_detail_id"]]["xp"]:
-                    mycards[r["card_detail_id"]] = {"uid": r["uid"], "xp": r["xp"], "name": cards[r["card_detail_id"]]["name"], "edition": r["edition"], "id": r["card_detail_id"]}            
+                    mycards[r["card_detail_id"]] = {"uid": r["uid"], "xp": r["xp"], "name": cards[r["card_detail_id"]]["name"], "edition": r["edition"], "id": r["card_detail_id"], "gold": r["gold"]}            
             
             while play_round < self.sm_config["play_counter"]:
                 if inp == "random":
