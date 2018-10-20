@@ -41,7 +41,7 @@ def log(string, color, font="slant"):
     six.print_(colored(string, color))
 
 
-class MyPrompt(Cmd):
+class cli(Cmd):
     prompt = 'sm> '
     intro = "Welcome! Type ? to list commands"
     account = ""
@@ -188,7 +188,8 @@ class MyPrompt(Cmd):
                     for r in response:
                         if r["type"] == "sm_find_match":
                             player = r["player"]
-                            if player not in open_match:
+                            data = json.loads(r["data"])
+                            if player not in open_match and abs(summoner_level - data["summoner_level"]) <= 1:
                                 open_match.append(player)
                         elif r["type"] == "sm_team_reveal":
                             player = r["player"]
@@ -282,6 +283,12 @@ class MyPrompt(Cmd):
         match_cnt = 0
         open_match = []
         reveal_match = []
+        response = self.api.get_card_details()
+        cards = {}
+        cards_by_name = {}
+        for r in response:
+            cards[r["id"]] = r
+            cards_by_name[r["name"]] = r        
         while True:
             match_cnt += 1
             
@@ -290,9 +297,10 @@ class MyPrompt(Cmd):
                 block_num = r["block_num"]
                 if r["type"] == "sm_find_match":
                     player = r["player"]
+                    data = json.loads(r["data"])
                     if player not in open_match:
                         open_match.append(player)
-                        log("%s starts searching for a match (%d player searching)" % (player, len(open_match)), color="yellow")
+                        log("%s with summoner_level %d starts searching (%d player searching)" % (player, data["summoner_level"], len(open_match)), color="yellow")
                 elif r["type"] == "sm_team_reveal":
                     result = json.loads(r["result"])
                     player = r["player"]
@@ -307,20 +315,25 @@ class MyPrompt(Cmd):
                             reveal_match.remove(player)
                     
                     if "battle" in result:
+                        players = result["battle"]["players"]
                         team1 = [{"id": result["battle"]["details"]["team1"]["summoner"]["card_detail_id"], "level": result["battle"]["details"]["team1"]["summoner"]["level"]}]
                         for m in result["battle"]["details"]["team1"]["monsters"]:
                             team1.append({"id": m["card_detail_id"], "level": m["level"]})
                         team1_player = result["battle"]["details"]["team1"]["player"]
+                        team1_summoner = result["battle"]["details"]["team1"]["summoner"]
+                        summoner1 = cards[team1_summoner["card_detail_id"]]["name"]+':%d' % team1_summoner["level"]
             
                         team2 = [{"id": result["battle"]["details"]["team2"]["summoner"]["card_detail_id"], "level": result["battle"]["details"]["team2"]["summoner"]["level"]}]
                         for m in result["battle"]["details"]["team2"]["monsters"]:
                             team2.append({"id": m["card_detail_id"], "level": m["level"]})
                         team2_player = result["battle"]["details"]["team2"]["player"]
+                        team2_summoner = result["battle"]["details"]["team2"]["summoner"]
+                        summoner2 = cards[team2_summoner["card_detail_id"]]["name"] + ':%d' % team2_summoner["level"]
                         winner = result["battle"]["details"]["winner"]
                         if team1_player == winner:
-                            print("match " + colored(team1_player, "green")+" - " + colored(team2_player, "red"))
+                            print("match " + colored("%s (%s)" % (team1_player, summoner1), "green")+" - " + colored("%s (%s)" % (team2_player, summoner2), "red"))
                         else:
-                            print("match " + colored(team2_player, "green")+" - " + colored(team1_player, "red"))
+                            print("match " + colored("%s (%s)" % (team2_player, summoner2), "green")+" - " + colored("%s (%s)" % (team1_player, summoner1), "red"))
                         if team2_player in open_match:
                             open_match.remove(team2_player)
                         if team1_player in open_match:
@@ -344,4 +357,4 @@ class MyPrompt(Cmd):
     help_EOF = help_exit
  
 if __name__ == '__main__':
-    MyPrompt().cmdloop()
+    cli().cmdloop()
