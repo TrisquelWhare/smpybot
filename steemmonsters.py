@@ -103,7 +103,7 @@ class SMPrompt(Cmd):
         print(tx)
 
     def do_ranking(self, inp):
-        response = self.api.get_player_details(acc["name"])
+        response = self.api.get_player_details(self.sm_config["account"])
         tx = json.dumps(response, indent=4)
         print(tx)
 
