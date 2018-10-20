@@ -100,7 +100,14 @@ class cli(Cmd):
  
     def do_show_deck(self, inp):
         tx = json.dumps(self.sm_config["decks"][inp], indent=4)
-        print(tx) 
+        print(tx)
+
+    def do_cancel(self, inp):
+        self.stm.wallet.unlock(self.sm_config["wallet_password"])
+        acc = Account(self.sm_config["account"], steem_instance=self.stm)
+        trx = self.stm.custom_json('sm_cancel_match', "{}", required_posting_auths=[acc["name"]])
+        print("sm_cancel_match broadcastet!")
+        sleep(3)        
  
     def do_play(self, inp):
         if inp != "random" and inp not in self.sm_config["decks"]:
@@ -166,8 +173,8 @@ class cli(Cmd):
                 team_hash = generate_team_hash(deck["summoner"], deck["monsters"], deck["secret"])
                 json_data = {"match_type":match_type, "mana_cap":mana_cap,"team_hash":team_hash,"summoner_level":summoner_level,"ruleset":ruleset}
                 trx = self.stm.custom_json('sm_find_match', json_data, required_posting_auths=[acc["name"]])
-
-                sleep(1)
+                print("sm_find_match broadcasted...")
+                sleep(3)
                 found = False
                 for h in self.b.stream(opNames=["custom_json"]):
                     if h["id"] == 'sm_find_match':
@@ -177,33 +184,9 @@ class cli(Cmd):
                 start_block_find = h["block_num"]
                 deck["trx_id"] =  h['trx_id']
                 block_num = h["block_num"]
+                print("Transaction id found (%d - %s)" % (block_num, deck["trx_id"]))
                 
-                match_cnt = 0
-                open_match = []
-                reveal_match = []
-                while len(open_match) == 0 and match_cnt < 10:
-                    match_cnt += 1
-                    response = self.api.get_from_block(block_num - 10)
-                    
-                    for r in response:
-                        if r["type"] == "sm_find_match":
-                            player = r["player"]
-                            data = json.loads(r["data"])
-                            if player not in open_match and abs(summoner_level - data["summoner_level"]) <= 1:
-                                open_match.append(player)
-                        elif r["type"] == "sm_team_reveal":
-                            player = r["player"]
-                            result = json.loads(r["result"])
-                            if player in open_match:
-                                open_match.remove(player)
-                            if player not in reveal_match:
-                                if "status" in result and "Waiting for opponent reveal." in result["status"]:
-                                    reveal_match.append(player)
-                            else:
-                                if "status" in result and "Waiting for opponent reveal." not in result["status"]:
-                                    reveal_match.remove(player)
-                    # print("open %s" % str(open_match))
-                    # print("Waiting %s" % str(reveal_match))
+                
                 response = ""
                 cnt2 = 0
                 trx_found = False
@@ -224,12 +207,47 @@ class cli(Cmd):
                         sleep(3)
                     break
                 else:
-                    print("sm_find_match sucessfully broadcasted (%d - %s)" % (block_num, deck["trx_id"]))
-                #     print(response.json())
+                    print("Transaction is valid...")
+                #     print(response.json())                
+                
+                match_cnt = 0
+                open_match = []
+                reveal_match = []
+                while len(reveal_match) == 0 and match_cnt < 20:
+                    match_cnt += 1
+                    response = self.api.get_from_block(block_num)
+                    
+                    for r in response:
+                        if r["type"] == "sm_find_match":
+                            player = r["player"]
+                            data = json.loads(r["data"])
+                            if player not in open_match and abs(summoner_level - data["summoner_level"]) <= 1:
+                                open_match.append(player)
+                        elif r["type"] == "sm_team_reveal":
+                            player = r["player"]
+                            result = json.loads(r["result"])
+                            if player not in reveal_match and player in open_match:
+                                if "status" in result and "Waiting for opponent reveal." in result["status"]:
+                                    reveal_match.append(player)
+                                    open_match.remove(player)
+                            else:
+                                if "status" in result and "Waiting for opponent reveal." not in result["status"]:
+                                    if "battle" in result:
+                                        if result["battle"]["players"][0]["name"] in reveal_match:
+                                            reveal_match.remove(result["battle"]["players"][0]["name"])   
+                                        if result["battle"]["players"][1]["name"] in reveal_match:
+                                            reveal_match.remove(result["battle"]["players"][1]["name"])                                         
+                                    elif player in reveal_match:
+                                        reveal_match.remove(player)
+                    sleep(1)
+                    # print("open %s" % str(open_match))
+                    # print("Waiting %s" % str(reveal_match))
+                # print("Opponents found: %s" % str(reveal_match))
+                print("Opponents found...")
                 
                 json_data = deck
                 trx = self.stm.custom_json('sm_team_reveal', json_data, required_posting_auths=[acc["name"]])
-
+                print("sm_team_reveal broadcastet and waiting for results.")
                 stop_time = datetime.utcnow()
                 stop_block = self.b.get_current_block_num()
                 response = ""
