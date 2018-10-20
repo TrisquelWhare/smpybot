@@ -14,7 +14,7 @@
                 "water3": ["Alric Stormbringer", "Spineback Turtle", "Sabre Shark", "Mischievous Mermaid", "Medusa", "Crustacean King"],
                 "earth1": ["Lyanna Natura", "Stone Golem", "Earth Elemental", "Swamp Thing", "Goblin Sorcerer", "Spirit of the Forest"],
                 "death2": ["Zintar Mortalis", "Haunted Spirit", "Lord of Darkness", "Undead Priest", "Screaming Banshee", "Haunted Spider"],
-                "earth2": ["Lyanna Natura", "Rexxie", "Earth Elemental", "Swamp Thing", "Spirit of the Forest"],
+                "earth2": ["Lyanna Natura", "Rexxie", "Earth Elemental", "Swamp Thing", "Spirit of the Forest"]
     },
     "play_counter": 1,
     "play_delay": 60
