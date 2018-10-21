@@ -50,6 +50,14 @@ class Api(object):
             cnt2 += 1
         return response.json()
 
+    def get_player_details(self, player):
+        response = ""
+        cnt2 = 0
+        while str(response) != '<Response [200]>' and cnt2 < 10:
+            response = requests.get(self.__url__ + "players/details?name=%s" % player)
+            cnt2 += 1
+        return response.json()
+
     def get_for_sale(self):
         response = ""
         cnt2 = 0
@@ -76,7 +84,7 @@ class Api(object):
         while str(response) != '<Response [200]>' and cnt2 < 10:
             response = requests.get(self.__url__ + "transactions/history?from_block=%d" % block_num)
             if str(response) != '<Response [200]>':
-                sleep(2)
+                time.sleep(2)
             cnt2 += 1
         return response.json()
 
@@ -86,7 +94,7 @@ class Api(object):
         while str(response) != '<Response [200]>' and cnt2 < 10:
             response = requests.get(self.__url__ + "transactions/lookup?trx_id=%s" % trx)
             if str(response) != '<Response [200]>':
-                sleep(2)
+                time.sleep(2)
             cnt2 += 1
         return response.json()
 
@@ -96,7 +104,7 @@ class Api(object):
         while str(response) != '<Response [200]>' and cnt2 < 10:
             response = requests.get(self.__url__ + "cards/stats")
             if str(response) != '<Response [200]>':
-                sleep(2)
+                time.sleep(2)
             cnt2 += 1
         return response.json()
 
@@ -106,16 +114,26 @@ class Api(object):
         while str(response) != '<Response [200]>' and cnt2 < 10:
             response = requests.get(self.__url__ + "market/status?id=%s" % market_id)
             if str(response) != '<Response [200]>':
-                sleep(2)
+                time.sleep(2)
             cnt2 += 1
         return response.json()
 
     def get_battle_result(self, ids):
         response = ""
         cnt2 = 0
-        while str(response) != '<Response [200]>' and cnt2 < 10:
+        while str(response) != '<Response [200]>' and cnt2 < 20:
             response = requests.get(self.__url__ + "battle/result?id=%s" % ids)
             if str(response) != '<Response [200]>':
-                sleep(2)
+                time.sleep(1)
+            cnt2 += 1
+        return response.json()
+
+    def get_battle_status(self, ids):
+        response = ""
+        cnt2 = 0
+        while str(response) != '<Response [200]>' and cnt2 < 20:
+            response = requests.get(self.__url__ + "battle/status?id=%s" % ids)
+            if str(response) != '<Response [200]>':
+                time.sleep(1)
             cnt2 += 1
         return response.json()

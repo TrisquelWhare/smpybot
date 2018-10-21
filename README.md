@@ -59,7 +59,10 @@ beempy addkey
                 "water1": ["Alric Stormbringer", "Naga Warrior", "Medusa", "Mischievous Mermaid", "Pirate Captain", "Crustacean King"],
                 "fire1": ["Malric Inferno", "Serpentine Soldier", "Elemental Phoenix", "Goblin Shaman", "Fire Demon"],
     },
-    "play_counter": 1
+    "play_counter": 1,
+    "play_delay": 10,
+    "play_inside_ranking_border": false,
+    "ranking_border": [2500, 3000]
 }
 ```
 
@@ -69,4 +72,7 @@ beempy addkey
 * `ruleset`: current rule set
 * `match_type`: match type
 * `decks` contains the different pre defined decks. There is no mana_cap check
-* `play_counter` diffens how often a deck is played
+* `play_counter`  how often a deck is played, -1 means play foreever
+* `play_delay`  delay in seconds between two rounds
+* `play_inside_ranking_border`  if true, playing is stopped when outside ranking_border
+* `ranking_border`  continue to play, when inside this border

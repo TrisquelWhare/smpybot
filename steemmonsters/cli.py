@@ -41,7 +41,7 @@ def log(string, color, font="slant"):
     six.print_(colored(string, color))
 
 
-class cli(Cmd):
+class SMPrompt(Cmd):
     prompt = 'sm> '
     intro = "Welcome! Type ? to list commands"
     account = ""
@@ -102,14 +102,21 @@ class cli(Cmd):
         tx = json.dumps(self.sm_config["decks"][inp], indent=4)
         print(tx)
 
+    def do_ranking(self, inp):
+        response = self.api.get_player_details(self.sm_config["account"])
+        tx = json.dumps(response, indent=4)
+        print(tx)
+
     def do_cancel(self, inp):
         self.stm.wallet.unlock(self.sm_config["wallet_password"])
         acc = Account(self.sm_config["account"], steem_instance=self.stm)
         trx = self.stm.custom_json('sm_cancel_match', "{}", required_posting_auths=[acc["name"]])
-        print("sm_cancel_match broadcastet!")
+        print("sm_cancel_match broadcasted!")
         sleep(3)        
  
     def do_play(self, inp):
+        if inp == "":
+            inp = "random"
         if inp != "random" and inp not in self.sm_config["decks"]:
             print("%s does not exists" % inp)
         else:
@@ -127,6 +134,9 @@ class cli(Cmd):
             
             acc = Account(self.sm_config["account"], steem_instance=self.stm)
             
+            response = self.api.get_player_details(acc["name"])
+            print("%s rating: %d, battles: %d, wins: %d, cur. streak: %d" % (acc["name"], response["rating"], response["battles"], response["wins"], response["current_streak"]))
+            
             response = self.api.get_card_details()
             cards = {}
             cards_by_name = {}
@@ -137,14 +147,25 @@ class cli(Cmd):
             mycards = {}
             for r in response["cards"]:
                 if r["card_detail_id"] not in mycards:
-                    mycards[r["card_detail_id"]] = {"uid": r["uid"], "xp": r["xp"], "name": cards[r["card_detail_id"]]["name"], "edition": r["edition"], "id": r["card_detail_id"]}
+                    mycards[r["card_detail_id"]] = {"uid": r["uid"], "xp": r["xp"], "name": cards[r["card_detail_id"]]["name"], "edition": r["edition"], "id": r["card_detail_id"], "gold": r["gold"]}
                 elif r["xp"] > mycards[r["card_detail_id"]]["xp"]:
-                    mycards[r["card_detail_id"]] = {"uid": r["uid"], "xp": r["xp"], "name": cards[r["card_detail_id"]]["name"], "edition": r["edition"], "id": r["card_detail_id"]}            
-            
-            while play_round < self.sm_config["play_counter"]:
+                    mycards[r["card_detail_id"]] = {"uid": r["uid"], "xp": r["xp"], "name": cards[r["card_detail_id"]]["name"], "edition": r["edition"], "id": r["card_detail_id"], "gold": r["gold"]}            
+            continue_playing = True
+            while continue_playing and (self.sm_config["play_counter"] < 0 or play_round < self.sm_config["play_counter"]):
+                if "play_inside_ranking_border" in self.sm_config and self.sm_config["play_inside_ranking_border"]:
+                    ranking_border = self.sm_config["ranking_border"]
+                    response = self.api.get_player_details(acc["name"])
+                    if response["rating"] < ranking_border[0] or response["rating"] > ranking_border[1]:
+                        print("Stop playing, rating %d outside [%d, %d]" % (response["rating"], ranking_border[0], ranking_border[1]))
+                        continue_playing = False
+                        continue
                 if inp == "random":
                     deck_ids = self.sm_config["decks"][deck_ids_list[random.randint(0, len(deck_ids_list) - 1)]]
                     print("Random mode: play %s" % str(deck_ids))
+                if play_round > 0 and "play_delay" in self.sm_config:
+                    if self.sm_config["play_delay"] >= 1:
+                        print("waiting %d seconds" % self.sm_config["play_delay"])
+                        sleep(self.sm_config["play_delay"])
                 play_round += 1
                 secret = generate_key(10)
                 monsters = []
@@ -197,8 +218,8 @@ class cli(Cmd):
                     else:
                         if "trx_info" in response.json() and response.json()["trx_info"]["success"]:
                             trx_found = True
-                        elif 'error' in response.json():
-                            print(response.json()["error"])
+                        # elif 'error' in response.json():
+                        #    print(response.json()["error"])
                     cnt2 += 1                
                 if 'error' in response.json():
                     print(response.json()["error"])
@@ -211,43 +232,24 @@ class cli(Cmd):
                 #     print(response.json())                
                 
                 match_cnt = 0
-                open_match = []
-                reveal_match = []
-                while len(reveal_match) == 0 and match_cnt < 20:
+                match_found = False
+                while not match_found and match_cnt < 60:
                     match_cnt += 1
-                    response = self.api.get_from_block(block_num)
-                    
-                    for r in response:
-                        if r["type"] == "sm_find_match":
-                            player = r["player"]
-                            data = json.loads(r["data"])
-                            if player not in open_match and abs(summoner_level - data["summoner_level"]) <= 1:
-                                open_match.append(player)
-                        elif r["type"] == "sm_team_reveal":
-                            player = r["player"]
-                            result = json.loads(r["result"])
-                            if player not in reveal_match and player in open_match:
-                                if "status" in result and "Waiting for opponent reveal." in result["status"]:
-                                    reveal_match.append(player)
-                                    open_match.remove(player)
-                            else:
-                                if "status" in result and "Waiting for opponent reveal." not in result["status"]:
-                                    if "battle" in result:
-                                        if result["battle"]["players"][0]["name"] in reveal_match:
-                                            reveal_match.remove(result["battle"]["players"][0]["name"])   
-                                        if result["battle"]["players"][1]["name"] in reveal_match:
-                                            reveal_match.remove(result["battle"]["players"][1]["name"])                                         
-                                    elif player in reveal_match:
-                                        reveal_match.remove(player)
+                    response = self.api.get_battle_status(deck["trx_id"])
+                    if "status" in response and response["status"] > 0:
+                        match_found = True
                     sleep(1)
                     # print("open %s" % str(open_match))
                     # print("Waiting %s" % str(reveal_match))
                 # print("Opponents found: %s" % str(reveal_match))
-                print("Opponents found...")
+                if not match_found:
+                    print("Timeout and no opponent found...")
+                    continue
+                print("Opponent found...")
                 
                 json_data = deck
                 trx = self.stm.custom_json('sm_team_reveal', json_data, required_posting_auths=[acc["name"]])
-                print("sm_team_reveal broadcastet and waiting for results.")
+                print("sm_team_reveal broadcasted and waiting for results.")
                 stop_time = datetime.utcnow()
                 stop_block = self.b.get_current_block_num()
                 response = ""
@@ -329,7 +331,7 @@ class cli(Cmd):
                             reveal_match.append(player)
                             log("%s waits for opponent reveal (%d player waiting)" % (player, len(reveal_match)), color="white")
                     else:
-                        if "Waiting for opponent reveal." not in json.loads(r["result"])["status"]:
+                        if "status" in result and "Waiting for opponent reveal." not in result["status"]:
                             reveal_match.remove(player)
                     
                     if "battle" in result:
@@ -374,5 +376,11 @@ class cli(Cmd):
     do_EOF = do_exit
     help_EOF = help_exit
  
+ 
+def main():
+    smprompt = SMPrompt()
+    smprompt.cmdloop()
+
+
 if __name__ == '__main__':
-    cli().cmdloop()
+    main()
