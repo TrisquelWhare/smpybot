@@ -111,7 +111,7 @@ class SMPrompt(Cmd):
         self.stm.wallet.unlock(self.sm_config["wallet_password"])
         acc = Account(self.sm_config["account"], steem_instance=self.stm)
         trx = self.stm.custom_json('sm_cancel_match', "{}", required_posting_auths=[acc["name"]])
-        print("sm_cancel_match broadcastet!")
+        print("sm_cancel_match broadcasted!")
         sleep(3)        
  
     def do_play(self, inp):
@@ -240,7 +240,7 @@ class SMPrompt(Cmd):
                 
                 json_data = deck
                 trx = self.stm.custom_json('sm_team_reveal', json_data, required_posting_auths=[acc["name"]])
-                print("sm_team_reveal broadcastet and waiting for results.")
+                print("sm_team_reveal broadcasted and waiting for results.")
                 stop_time = datetime.utcnow()
                 stop_block = self.b.get_current_block_num()
                 response = ""
