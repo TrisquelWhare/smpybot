@@ -322,7 +322,7 @@ class SMPrompt(Cmd):
                             reveal_match.append(player)
                             log("%s waits for opponent reveal (%d player waiting)" % (player, len(reveal_match)), color="white")
                     else:
-                        if "Waiting for opponent reveal." not in json.loads(r["result"])["status"]:
+                        if "status" in result and "Waiting for opponent reveal." not in result["status"]:
                             reveal_match.remove(player)
                     
                     if "battle" in result:
