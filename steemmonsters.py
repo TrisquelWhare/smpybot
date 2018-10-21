@@ -115,6 +115,8 @@ class SMPrompt(Cmd):
         sleep(3)        
  
     def do_play(self, inp):
+        if inp == "":
+            inp = "random"
         if inp != "random" and inp not in self.sm_config["decks"]:
             print("%s does not exists" % inp)
         else:
@@ -148,8 +150,15 @@ class SMPrompt(Cmd):
                     mycards[r["card_detail_id"]] = {"uid": r["uid"], "xp": r["xp"], "name": cards[r["card_detail_id"]]["name"], "edition": r["edition"], "id": r["card_detail_id"], "gold": r["gold"]}
                 elif r["xp"] > mycards[r["card_detail_id"]]["xp"]:
                     mycards[r["card_detail_id"]] = {"uid": r["uid"], "xp": r["xp"], "name": cards[r["card_detail_id"]]["name"], "edition": r["edition"], "id": r["card_detail_id"], "gold": r["gold"]}            
-            
-            while play_round < self.sm_config["play_counter"]:
+            continue_playing = True
+            while continue_playing and (self.sm_config["play_counter"] < 0 or play_round < self.sm_config["play_counter"]):
+                if "play_inside_ranking_border" in self.sm_config and self.sm_config["play_inside_ranking_border"]:
+                    ranking_border = self.sm_config["ranking_border"]
+                    response = self.api.get_player_details(acc["name"])
+                    if response["rating"] < ranking_border[0] or response["rating"] > ranking_border[1]:
+                        print("Stop playing, rating %d outside [%d, %d]" % (response["rating"], ranking_border[0], ranking_border[1]))
+                        continue_playing = False
+                        continue
                 if inp == "random":
                     deck_ids = self.sm_config["decks"][deck_ids_list[random.randint(0, len(deck_ids_list) - 1)]]
                     print("Random mode: play %s" % str(deck_ids))

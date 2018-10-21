@@ -111,10 +111,12 @@ class SMPrompt(Cmd):
         self.stm.wallet.unlock(self.sm_config["wallet_password"])
         acc = Account(self.sm_config["account"], steem_instance=self.stm)
         trx = self.stm.custom_json('sm_cancel_match', "{}", required_posting_auths=[acc["name"]])
-        print("sm_cancel_match broadcastet!")
+        print("sm_cancel_match broadcasted!")
         sleep(3)        
  
     def do_play(self, inp):
+        if inp == "":
+            inp = "random"
         if inp != "random" and inp not in self.sm_config["decks"]:
             print("%s does not exists" % inp)
         else:
@@ -148,8 +150,15 @@ class SMPrompt(Cmd):
                     mycards[r["card_detail_id"]] = {"uid": r["uid"], "xp": r["xp"], "name": cards[r["card_detail_id"]]["name"], "edition": r["edition"], "id": r["card_detail_id"], "gold": r["gold"]}
                 elif r["xp"] > mycards[r["card_detail_id"]]["xp"]:
                     mycards[r["card_detail_id"]] = {"uid": r["uid"], "xp": r["xp"], "name": cards[r["card_detail_id"]]["name"], "edition": r["edition"], "id": r["card_detail_id"], "gold": r["gold"]}            
-            
-            while play_round < self.sm_config["play_counter"]:
+            continue_playing = True
+            while continue_playing and (self.sm_config["play_counter"] < 0 or play_round < self.sm_config["play_counter"]):
+                if "play_inside_ranking_border" in self.sm_config and self.sm_config["play_inside_ranking_border"]:
+                    ranking_border = self.sm_config["ranking_border"]
+                    response = self.api.get_player_details(acc["name"])
+                    if response["rating"] < ranking_border[0] or response["rating"] > ranking_border[1]:
+                        print("Stop playing, rating %d outside [%d, %d]" % (response["rating"], ranking_border[0], ranking_border[1]))
+                        continue_playing = False
+                        continue
                 if inp == "random":
                     deck_ids = self.sm_config["decks"][deck_ids_list[random.randint(0, len(deck_ids_list) - 1)]]
                     print("Random mode: play %s" % str(deck_ids))
@@ -240,7 +249,7 @@ class SMPrompt(Cmd):
                 
                 json_data = deck
                 trx = self.stm.custom_json('sm_team_reveal', json_data, required_posting_auths=[acc["name"]])
-                print("sm_team_reveal broadcastet and waiting for results.")
+                print("sm_team_reveal broadcasted and waiting for results.")
                 stop_time = datetime.utcnow()
                 stop_block = self.b.get_current_block_num()
                 response = ""
@@ -322,7 +331,7 @@ class SMPrompt(Cmd):
                             reveal_match.append(player)
                             log("%s waits for opponent reveal (%d player waiting)" % (player, len(reveal_match)), color="white")
                     else:
-                        if "Waiting for opponent reveal." not in json.loads(r["result"])["status"]:
+                        if "status" in result and "Waiting for opponent reveal." not in result["status"]:
                             reveal_match.remove(player)
                     
                     if "battle" in result:
